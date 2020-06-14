@@ -1,0 +1,27 @@
+{
+  "name": "auth-proxy",
+  "version": "1.0.0",
+  "description": "A proxy to inject bearer token based on email of an user authorized through Cloudflare Access ",
+  "main": "worker.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "parcel build worker.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dev-launchers/auth-proxy.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dev-launchers/auth-proxy/issues"
+  },
+  "homepage": "https://github.com/dev-launchers/auth-proxy#readme",
+  "dependencies": {
+    "jsrsasign": "^8.0.16",
+    "uuidv4": "^6.1.0"
+  }
+}
