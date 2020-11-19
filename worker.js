@@ -22,12 +22,8 @@ async function handleRequest(request) {
   const namespace = data['ns'];
   var proxyHeaders = new Headers(request.headers);
   proxyHeaders.append('Authorization', 'Bearer ' + userToken);
-  var reqURL = new URL(request.url);
-  var proxyBaseURL = await K8S_DASHBOARD_AUTH.get("dashURL");
-  var proxyURL = new URL(proxyBaseURL + reqURL.pathname);
-  proxyURL.searchParams.set('namespace', namespace);
   const proxyReq = new Request(
-    proxyURL,
+    request.url,
     {
       method: request.method,
       headers: proxyHeaders,
@@ -40,7 +36,6 @@ async function handleRequest(request) {
     .catch(async function (err) {
       return sentryErr(err)
     });
-
   return resp
 }
 
@@ -52,7 +47,6 @@ function find_email(headers) {
 
 async function find_user_data(email) {
   const data = await K8S_DASHBOARD_AUTH.get(email);
-  console.log('raw data', data);
   if (data == null) {
     throw `No token for ${email}`
   }
