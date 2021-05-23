@@ -24,7 +24,10 @@ async function handleRequest(request) {
   proxyHeaders.append('Authorization', 'Bearer ' + userToken);
 
   const requestedURL = new URL(request.url);
-  requestedURL.pathname = `/#/overview?namespace=${ns}`
+  if (requestedURL.pathname === "/") {
+    requestedURL.pathname = `/#/overview?namespace=${ns}`
+  }
+
   const proxyReq = new Request(
     requestedURL,
     {
