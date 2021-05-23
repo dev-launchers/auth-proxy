@@ -10,7 +10,6 @@ addEventListener('fetch', event => {
  * @param {Request} request
  */
 async function handleRequest(request) {
-  const urls = (await K8S_DASHBOARD_AUTH.get('tunnelHostnames')).split(',');
   const email = find_email(request.headers);
   const data = await find_user_data(email)
     .then(data => {
@@ -19,44 +18,34 @@ async function handleRequest(request) {
     .catch(async function (err) {
       return sendSentryErr(err)
     });
+  const ns = data['ns'];
   const userToken = data['token'];
   var proxyHeaders = new Headers(request.headers);
   proxyHeaders.append('Authorization', 'Bearer ' + userToken);
 
-  for (var i = 0; i < urls.length; i++) {
-    const requestedURL = new URL(request.url);
-    const path = requestedURL.pathname;
-    const url = new URL(`https://${urls[0]}/${path}`);
-    const proxyReq = new Request(
-      url,
-      {
-        method: request.method,
-        headers: proxyHeaders,
-      },
-    );
-    const resp = await fetch(proxyReq)
-      .then(resp => {
-        return resp
-      })
-      .catch(async function (err) {
-        await sendSentryErr(err)
-        return new Response(err, {
-          "status": 503,
-          "statusText": "Service Unavailable",
-          "headers": { 'Content-Type': 'text/plain' }
-        })
-      });
-    // Retry the next url on 502 error, when the tunnel cannot connect to the origin
-    // or 503, when the tunnel is unregistered, or when the worker cannot fetch the tunnel
-    if (resp.status != 502 || resp.status != 503) {
+  const requestedURL = new URL(request.url);
+  requestedURL.pathname = `/#/overview?namespace=${ns}`
+  const proxyReq = new Request(
+    requestedURL,
+    {
+      method: request.method,
+      headers: proxyHeaders,
+    },
+  );
+  const resp = await fetch(proxyReq)
+    .then(resp => {
       return resp
-    }
-  }
-  return new Response("Exhausted all fallback options", {
-    "status": 500,
-    "statusText": "Service Unavailable",
-    "headers": { 'Content-Type': 'text/plain' }
-  })
+    })
+    .catch(async function (err) {
+      await sendSentryErr(err)
+      return new Response(err, {
+        "status": 503,
+        "statusText": "Service Unavailable",
+        "headers": { 'Content-Type': 'text/plain' }
+      })
+    });
+
+  return resp
 }
 
 function find_email(headers) {
